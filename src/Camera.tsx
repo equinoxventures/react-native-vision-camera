@@ -34,6 +34,18 @@ type NativeCameraViewProps = Omit<
   onViewReady: () => void;
 };
 type RefType = React.Component<NativeCameraViewProps> & Readonly<NativeMethods>;
+type CameraInternalState = {
+  timestamps: {
+    requestRecordingStartedAt: string;
+    actualRecordingStartedAt: string;
+    requestTorchOnAt: string;
+    actualTorchOnAt: string;
+    requestTorchOffAt: string;
+    actualTorchOffAt: string;
+    requestRecordingEndedAt: string;
+    actualRecordingEndedAt: string;
+  };
+};
 //#endregion
 
 // torch on and off utils function
@@ -94,7 +106,7 @@ if (CameraModule == null) console.error("Camera: Native Module 'CameraView' was 
  *
  * @component
  */
-export class Camera extends React.PureComponent<CameraProps> {
+export class Camera extends React.PureComponent<CameraProps, CameraInternalState> {
   /** @internal */
   static displayName = 'Camera';
   /** @internal */
@@ -215,7 +227,7 @@ export class Camera extends React.PureComponent<CameraProps> {
     this.setState(({ timestamps: prevTimestamps }) => ({
       timestamps: {
         ...prevTimestamps,
-        requestRecordingStartedAt: new Date().valueOf(),
+        requestRecordingStartedAt: String(new Date().valueOf()),
       },
     }));
     const { onRecordingError, onRecordingFinished, ...passThroughOptions } = options;
@@ -223,15 +235,14 @@ export class Camera extends React.PureComponent<CameraProps> {
       throw new CameraRuntimeError('parameter/invalid-parameter', 'The onRecordingError or onRecordingFinished functions were not set!');
 
     const onRecordCallback = (video?: VideoFile, error?: CameraCaptureError): void => {
-      console.log('onRecordCallback', {video, error});
       if (error != null) return onRecordingError(error);
-       if (video != null) {
-         const videoWithTimestamps = {...video, timestamps: this.state.timestamps};
-         return onRecordingFinished(videoWithTimestamps);
-       }
+      if (video != null) {
+        const videoWithTimestamps = { ...video, timestamps: this.state.timestamps };
+        return onRecordingFinished(videoWithTimestamps);
+      }
       //   return onRecordingFinished( videoWithTimestamps );
       // }
-     // if (video != null) return onRecordingFinished(video);
+      // if (video != null) return onRecordingFinished(video);
     };
     // TODO: Use TurboModules to either make this a sync invokation, or make it async.
     try {
@@ -314,7 +325,7 @@ export class Camera extends React.PureComponent<CameraProps> {
     this.setState(({ timestamps: prevTimestamps }) => ({
       timestamps: {
         ...prevTimestamps,
-        requestRecordingEndedAt: new Date().valueOf(),
+        requestRecordingEndedAt: String(new Date().valueOf()),
       },
     }));
     try {

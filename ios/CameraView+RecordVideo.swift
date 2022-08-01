@@ -6,27 +6,29 @@
 //  Copyright © 2020 mrousavy. All rights reserved.
 //
 
+// MARK: - TorchControl
+
 struct TorchControl {
-    var torchDuration: Double
-    var torchDelay: Double
+  var torchDuration: Double
+  var torchDelay: Double
 }
 
+// MARK: - RecordingTimestamps
+
 struct RecordingTimestamps {
-    var actualRecordingStartedAt: Double?
-    var actualTorchOnAt: Double?
-    var actualTorchOffAt: Double?
-    var actualRecordingEndedAt: Double?
-    var requestTorchOnAt: Double?
-    var requestTorchOffAt: Double?
+  var actualRecordingStartedAt: Double?
+  var actualTorchOnAt: Double?
+  var actualTorchOffAt: Double?
+  var actualRecordingEndedAt: Double?
+  var requestTorchOnAt: Double?
+  var requestTorchOffAt: Double?
 }
 
 import AVFoundation
 
-
 // MARK: - CameraView + AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate
 
 extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
-    
   /**
    Starts a video + audio recording with a custom Asset Writer.
    */
@@ -105,15 +107,15 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
           }
         } else {
           if status == .completed {
-              let metadata = [
-                "actualRecordingStartedAt": self.recordingTimestamps.actualRecordingStartedAt,
-                "actualTorchOnAt": self.recordingTimestamps.actualTorchOnAt,
-                "actualTorchOffAt": self.recordingTimestamps.actualTorchOffAt,
-                "actualRecordingEndedAt": self.recordingTimestamps.actualRecordingEndedAt,
-                "requestTorchOnAt": self.recordingTimestamps.requestTorchOnAt,
-                "requestTorchOffAt": self.recordingTimestamps.requestTorchOffAt,
-              ]
-              
+            let metadata = [
+              "actualRecordingStartedAt": self.recordingTimestamps.actualRecordingStartedAt,
+              "actualTorchOnAt": self.recordingTimestamps.actualTorchOnAt,
+              "actualTorchOffAt": self.recordingTimestamps.actualTorchOffAt,
+              "actualRecordingEndedAt": self.recordingTimestamps.actualRecordingEndedAt,
+              "requestTorchOnAt": self.recordingTimestamps.requestTorchOnAt,
+              "requestTorchOffAt": self.recordingTimestamps.requestTorchOffAt,
+            ]
+
             print("recordingTimestamps \(self.recordingTimestamps)")
             callback.resolve([
               "path": recordingSession.url.absoluteString,
@@ -173,36 +175,36 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         return
       }
       self.isRecording = true
-        let recordingStartTimestamp = NSDate().timeIntervalSince1970
-        ReactLogger.log(level: .info, message: "recordingStartTimestamp:  \(recordingStartTimestamp)")
-        self.recordingTimestamps.actualRecordingStartedAt = NSDate().timeIntervalSince1970
-        
-        print("torchControl: \(options["torchControl"])")
-        if let torchControl = options["torchControl"] as? TorchControl {
-             DispatchQueue.main.asyncAfter(deadline: .now() + torchControl.torchDelay) {
-                 self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
-                 self.setTorchMode("on")
-                 self.recordingTimestamps.actualTorchOnAt = NSDate().timeIntervalSince1970
-             }
-             
-             DispatchQueue.main.asyncAfter(deadline: .now() + torchControl.torchDuration) {
-                 self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
-                 self.setTorchMode("off")
-                 self.recordingTimestamps.actualTorchOffAt = NSDate().timeIntervalSince1970
-             }
-        } else {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
-                self.setTorchMode("on")
-                self.recordingTimestamps.actualTorchOnAt = NSDate().timeIntervalSince1970
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
-                self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
-                self.setTorchMode("off")
-                self.recordingTimestamps.actualTorchOffAt = NSDate().timeIntervalSince1970
-            }
+      let recordingStartTimestamp = NSDate().timeIntervalSince1970
+      ReactLogger.log(level: .info, message: "recordingStartTimestamp:  \(recordingStartTimestamp)")
+      self.recordingTimestamps.actualRecordingStartedAt = NSDate().timeIntervalSince1970
+
+      print("torchControl: \(options["torchControl"])")
+      if let torchControl = options["torchControl"] as? TorchControl {
+        DispatchQueue.main.asyncAfter(deadline: .now() + torchControl.torchDelay) {
+          self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
+          self.setTorchMode("on")
+          self.recordingTimestamps.actualTorchOnAt = NSDate().timeIntervalSince1970
         }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + torchControl.torchDuration) {
+          self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
+          self.setTorchMode("off")
+          self.recordingTimestamps.actualTorchOffAt = NSDate().timeIntervalSince1970
+        }
+      } else {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+          self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
+          self.setTorchMode("on")
+          self.recordingTimestamps.actualTorchOnAt = NSDate().timeIntervalSince1970
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 7) {
+          self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
+          self.setTorchMode("off")
+          self.recordingTimestamps.actualTorchOffAt = NSDate().timeIntervalSince1970
+        }
+      }
     }
   }
 
@@ -215,9 +217,9 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
           throw CameraError.capture(.noRecordingInProgress)
         }
         recordingSession.finish()
-          let recordingStopTimestamp = NSDate().timeIntervalSince1970
-          ReactLogger.log(level: .info, message: "recordingStopTimestamp:  \(recordingStopTimestamp)")
-          self.recordingTimestamps.actualRecordingEndedAt = NSDate().timeIntervalSince1970
+        let recordingStopTimestamp = NSDate().timeIntervalSince1970
+        ReactLogger.log(level: .info, message: "recordingStopTimestamp:  \(recordingStopTimestamp)")
+        self.recordingTimestamps.actualRecordingEndedAt = NSDate().timeIntervalSince1970
         return nil
       }
     }
@@ -231,8 +233,8 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
           throw CameraError.capture(.noRecordingInProgress)
         }
         self.isRecording = false
-          let recordingStopTimestamp = NSDate().timeIntervalSince1970
-          ReactLogger.log(level: .info, message: "recordingStopTimestamp:  \(recordingStopTimestamp)")
+        let recordingStopTimestamp = NSDate().timeIntervalSince1970
+        ReactLogger.log(level: .info, message: "recordingStopTimestamp:  \(recordingStopTimestamp)")
         return nil
       }
     }
