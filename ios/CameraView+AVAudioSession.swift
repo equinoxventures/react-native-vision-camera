@@ -108,6 +108,26 @@ extension CameraView {
 
     audioCaptureSession.stopRunning()
   }
+    
+    func startFetchAudioLevel() {
+        guard let connections = audioOutput?.connections else {
+            ReactLogger.log(level: .info, message: "audio connections nil")
+            return
+        }
+        if connections.count > 0 {
+            let connection =  connections[0]
+            let audioChannels = connection.audioChannels
+            
+            for channel in audioChannels {
+                if (self.onAudioLevelChange) {
+                    self.onAudioLevelChange([
+                        "averagePowerLevel": channel.averagePowerLevel,
+                        "peakHoldLevel": channel.peakHoldLevel
+                    ])
+                }
+            }
+        }
+    }
 
   @objc
   func audioSessionInterrupted(notification: Notification) {
