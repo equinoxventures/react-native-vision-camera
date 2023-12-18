@@ -12,9 +12,21 @@ import com.mrousavy.camera.utils.makeErrorMap
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
+import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import java.util.Date
 
 data class TemporaryFile(val path: String)
 
+data class RecordingTimestamps(
+  var actualRecordingStartedAt: Double? = null,
+  var actualTorchOnAt: Double? = null,
+  var actualTorchOffAt: Double? = null,
+  var actualRecordingEndedAt: Double? = null,
+  var requestTorchOnAt: Double? = null,
+  var requestTorchOffAt: Double? = null
+)
 fun CameraView.startRecording(options: ReadableMap, onRecordCallback: Callback) {
   if (videoCapture == null) {
     if (video == true) {
@@ -68,15 +80,55 @@ fun CameraView.startRecording(options: ReadableMap, onRecordCallback: Callback) 
           onRecordCallback(null, map)
         } else {
           // recording saved successfully!
+          val metadata: WritableMap = WritableNativeMap().apply {
+            putDouble("actualRecordingStartedAt", recordingTimestamps.actualRecordingStartedAt ?: 0.0)
+            putDouble("actualTorchOnAt", recordingTimestamps.actualTorchOnAt ?: 0.0)
+            putDouble("actualTorchOffAt", recordingTimestamps.actualTorchOffAt ?: 0.0)
+            putDouble("actualRecordingEndedAt", recordingTimestamps.actualRecordingEndedAt ?: 0.0)
+            putDouble("requestTorchOnAt", recordingTimestamps.requestTorchOnAt ?: 0.0)
+            putDouble("requestTorchOffAt", recordingTimestamps.requestTorchOffAt ?: 0.0)
+          }
+
           val map = Arguments.createMap()
           map.putString("path", event.outputResults.outputUri.toString())
           map.putDouble("duration", /* seconds */ event.recordingStats.recordedDurationNanos.toDouble() / 1000000.0 / 1000.0)
           map.putDouble("size", /* kB */ event.recordingStats.numBytesRecorded.toDouble() / 1000.0)
+          map.putMap("metadata", metadata)
           onRecordCallback(map, null)
         }
 
         // reset the torch mode
         camera!!.cameraControl.enableTorch(torch == "on")
+      }
+
+      val recordingStartTimestamp = System.currentTimeMillis() / 1000.0
+
+      Log.i("ReactLogger", "recordingStartTimestamp: $recordingStartTimestamp")
+
+      recordingTimestamps.actualRecordingStartedAt = System.currentTimeMillis() / 1000.0
+
+      println("torchDelay: $torchDelay")
+      println("torchDuration: $torchDuration")
+
+      val handler = Handler(Looper.getMainLooper())
+
+      val torchDelayMillis = torchDelay * 1000L
+      val torchEndMillis = torchDelayMillis + (torchDuration * 1000L)
+
+      if (torchDuration > 0) {
+        // Schedule torch on event
+        handler.postDelayed({
+          recordingTimestamps.requestTorchOnAt = System.currentTimeMillis() / 1000.0
+          camera!!.cameraControl.enableTorch(torch == "on")
+          recordingTimestamps.actualTorchOnAt = System.currentTimeMillis() / 1000.0
+        }, torchDelayMillis)
+
+        // Schedule torch off event
+        handler.postDelayed({
+          recordingTimestamps.requestTorchOffAt = System.currentTimeMillis() / 1000.0
+          camera!!.cameraControl.enableTorch(torch == "off")
+          recordingTimestamps.actualTorchOffAt = System.currentTimeMillis() / 1000.0
+        }, torchEndMillis)
       }
     }
   })
@@ -90,6 +142,9 @@ fun CameraView.pauseRecording() {
   if (activeVideoRecording == null) {
     throw NoRecordingInProgressError()
   }
+
+  val recordingStopTimestamp = System.currentTimeMillis() / 1000.0
+  Log.i("ReactLogger", "recordingStopTimestamp: $recordingStopTimestamp")
 
   activeVideoRecording!!.pause()
 }

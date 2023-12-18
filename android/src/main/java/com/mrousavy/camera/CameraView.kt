@@ -98,6 +98,11 @@ class CameraView(context: Context, private val frameProcessorThread: ExecutorSer
   var torch = "off"
   var zoom: Float = 1f // in "factor"
   var orientation: String? = null
+
+  var torchLevel: Float = 0.7F
+  var torchDelay: Int = 0
+  var torchDuration: Int = 0
+
   var enableZoomGesture = false
     set(value) {
       field = value
@@ -141,6 +146,8 @@ class CameraView(context: Context, private val frameProcessorThread: ExecutorSer
 
   private val lifecycleRegistry: LifecycleRegistry
   private var hostLifecycleState: Lifecycle.State
+
+  internal var recordingTimestamps: RecordingTimestamps = RecordingTimestamps()
 
   private val inputRotation: Int
     get() {
@@ -204,6 +211,7 @@ class CameraView(context: Context, private val frameProcessorThread: ExecutorSer
               return false
             }
           }
+
         }
       }
       return false
@@ -344,7 +352,7 @@ class CameraView(context: Context, private val frameProcessorThread: ExecutorSer
   /**
    * Configures the camera capture session. This should only be called when the camera device changes.
    */
-  @SuppressLint("RestrictedApi")
+  @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
   private suspend fun configureSession() {
     try {
       val startTime = System.currentTimeMillis()

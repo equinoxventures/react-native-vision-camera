@@ -161,7 +161,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
     coroutineScope.launch {
       withPromise(promise) {
         val cameraProvider = ProcessCameraProvider.getInstance(reactApplicationContext).await()
-        val extensionsManager = ExtensionsManager.getInstanceAsync(reactApplicationContext, cameraProvider).await()
+//        val extensionsManager = ExtensionsManager.getInstanceAsync(reactApplicationContext, cameraProvider).await()
         ProcessCameraProvider.getInstance(reactApplicationContext).await()
 
         val manager = reactApplicationContext.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
@@ -197,9 +197,9 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
             characteristics.get(CameraCharacteristics.INFO_VERSION)
           else null
           val fpsRanges = characteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)!!
-
-          val supportsHdr = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.HDR)
-          val supportsLowLightBoost = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)
+//TODO: Replace with the correct extenstion to detect the HRD and night mode
+//          val supportsHdr = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.HDR)
+//          val supportsLowLightBoost = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)
           // see https://developer.android.com/reference/android/hardware/camera2/CameraDevice#regular-capture
           val supportsParallelVideoProcessing = hardwareLevel != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY && hardwareLevel != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED
 
@@ -216,7 +216,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
           map.putBoolean("supportsParallelVideoProcessing", supportsParallelVideoProcessing)
           map.putBoolean("supportsRawCapture", supportsRawCapture)
           map.putBoolean("supportsDepthCapture", supportsDepthCapture)
-          map.putBoolean("supportsLowLightBoost", supportsLowLightBoost)
+          map.putBoolean("supportsLowLightBoost", false)
           map.putBoolean("supportsFocus", true) // I believe every device here supports focussing
           if (zoomRange != null) {
             map.putDouble("minZoom", zoomRange.lower.toDouble())
@@ -296,7 +296,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
               format.putDouble("maxZoom", (zoomRange?.upper ?: maxScalerZoom).toDouble())
               format.putArray("colorSpaces", colorSpaces)
               format.putBoolean("supportsVideoHDR", false) // TODO: supportsVideoHDR
-              format.putBoolean("supportsPhotoHDR", supportsHdr)
+              format.putBoolean("supportsPhotoHDR", false)
               format.putArray("frameRateRanges", frameRateRanges)
               format.putString("autoFocusSystem", "none") // TODO: Revisit getAvailableCameraDevices (autoFocusSystem) (CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES or CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION)
               format.putArray("videoStabilizationModes", videoStabilizationModes)
