@@ -41,7 +41,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
   }
 
   var frameProcessorThread: ExecutorService = Executors.newSingleThreadExecutor()
-  private val coroutineScope = CoroutineScope(Dispatchers.Default) // TODO: or Dispatchers.Main?
+  private val coroutineScope = CoroutineScope(Dispatchers.Main) // TODO: or Dispatchers.Main?
   private var frameProcessorManager: FrameProcessorRuntimeManager? = null
 
   private fun cleanup() {

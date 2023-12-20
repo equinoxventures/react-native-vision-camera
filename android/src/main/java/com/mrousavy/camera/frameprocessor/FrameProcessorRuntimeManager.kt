@@ -1,10 +1,14 @@
 package com.mrousavy.camera.frameprocessor
 
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.annotation.Keep
+import androidx.annotation.UiThread
 import com.facebook.jni.HybridData
 import com.facebook.proguard.annotations.DoNotStrip
 import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.UiThreadUtil
 import com.facebook.react.turbomodule.core.CallInvokerHolderImpl
 import com.facebook.react.uimanager.UIManagerHelper
 import com.mrousavy.camera.CameraView
@@ -56,14 +60,35 @@ class FrameProcessorRuntimeManager(context: ReactApplicationContext, frameProces
     }
   }
 
-  @Suppress("unused")
-  @DoNotStrip
+
   @Keep
   fun findCameraViewById(viewId: Int): CameraView {
     Log.d(TAG, "Finding view $viewId...")
+//    val ctx = mContext?.get()
+//    val uiHandler = Handler(Looper.getMainLooper())
+//
+//    val view = if (ctx != null) {
+//      var result: CameraView? = null
+//      uiHandler.post {
+//        result = UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView?
+//      }
+//      result
+//    } else null
+//
+//    Log.d(TAG, if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
+//    return view ?: throw ViewNotFoundError(viewId)
+
+//    val ctx = mContext?.get()
+//    val view = if (ctx != null) UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView? else null
+//    Log.d(TAG,  if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
+//    return view ?: throw ViewNotFoundError(viewId)
+
+    Log.d(TAG, "Finding view $viewId...")
     val ctx = mContext?.get()
-    val view = if (ctx != null) UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView? else null
-    Log.d(TAG,  if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
+    val view = if (ctx != null) {
+      UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView?
+    } else null
+    Log.d(TAG, if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
     return view ?: throw ViewNotFoundError(viewId)
   }
 
