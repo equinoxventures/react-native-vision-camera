@@ -61,6 +61,33 @@ fun CameraView.startRecording(options: ReadableMap, onRecordCallback: Callback) 
     recording = recording.withAudioEnabled()
   }
 
+  val recordingStartTimestamp = System.currentTimeMillis() / 1000.0
+
+  Log.i("ReactLogger", "recordingStartTimestamp: $recordingStartTimestamp")
+
+  recordingTimestamps.actualRecordingStartedAt = System.currentTimeMillis() / 1000.0
+
+  println("torchDelay: $torchDelay")
+  println("torchDuration: $torchDuration")
+
+  val handler = Handler(Looper.getMainLooper())
+
+  if (torchDuration > 0) {
+    // Schedule torch on event
+    handler.postDelayed({
+      recordingTimestamps.requestTorchOnAt = System.currentTimeMillis() / 1000.0
+      camera!!.cameraControl.enableTorch(true)
+      recordingTimestamps.actualTorchOnAt = System.currentTimeMillis() / 1000.0
+    }, torchDelay.toLong())
+
+    // Schedule torch off event
+    handler.postDelayed({
+      recordingTimestamps.requestTorchOffAt = System.currentTimeMillis() / 1000.0
+      camera!!.cameraControl.enableTorch(false)
+      recordingTimestamps.actualTorchOffAt = System.currentTimeMillis() / 1000.0
+    }, torchDuration.toLong())
+  }
+
   activeVideoRecording = recording.start(ContextCompat.getMainExecutor(context), object : Consumer<VideoRecordEvent> {
     override fun accept(event: VideoRecordEvent?) {
       if (event is VideoRecordEvent.Finalize) {
@@ -99,36 +126,6 @@ fun CameraView.startRecording(options: ReadableMap, onRecordCallback: Callback) 
 
         // reset the torch mode
         camera!!.cameraControl.enableTorch(torch == "on")
-      }
-
-      val recordingStartTimestamp = System.currentTimeMillis() / 1000.0
-
-      Log.i("ReactLogger", "recordingStartTimestamp: $recordingStartTimestamp")
-
-      recordingTimestamps.actualRecordingStartedAt = System.currentTimeMillis() / 1000.0
-
-      println("torchDelay: $torchDelay")
-      println("torchDuration: $torchDuration")
-
-      val handler = Handler(Looper.getMainLooper())
-
-      val torchDelayMillis = torchDelay * 1000L
-      val torchEndMillis = torchDelayMillis + (torchDuration * 1000L)
-
-      if (torchDuration > 0) {
-        // Schedule torch on event
-        handler.postDelayed({
-          recordingTimestamps.requestTorchOnAt = System.currentTimeMillis() / 1000.0
-          camera!!.cameraControl.enableTorch(torch == "on")
-          recordingTimestamps.actualTorchOnAt = System.currentTimeMillis() / 1000.0
-        }, torchDelayMillis)
-
-        // Schedule torch off event
-        handler.postDelayed({
-          recordingTimestamps.requestTorchOffAt = System.currentTimeMillis() / 1000.0
-          camera!!.cameraControl.enableTorch(torch == "off")
-          recordingTimestamps.actualTorchOffAt = System.currentTimeMillis() / 1000.0
-        }, torchEndMillis)
       }
     }
   })

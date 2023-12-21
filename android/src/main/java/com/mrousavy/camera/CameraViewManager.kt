@@ -172,6 +172,48 @@ class CameraViewManager(reactContext: ReactApplicationContext) : ViewGroupManage
     view.orientation = orientation
   }
 
+  @ReactProp(name = "torchLevel")
+  fun setTorchLevel(view: CameraView, torchLevel: Float) {
+    if (view.torchLevel != torchLevel)
+      addChangedPropToTransaction(view, "torchLevel")
+    view.torchLevel = torchLevel
+  }
+
+  @ReactProp(name = "torchDelay")
+  fun setTorchDelay(view: CameraView, torchDelay: Int) {
+    if (view.torchDelay != torchDelay)
+      addChangedPropToTransaction(view, "torchDelay")
+    view.torchDelay = torchDelay
+  }
+
+  @ReactProp(name = "torchDuration")
+  fun setTorchDuration(view: CameraView, torchDuration: Int) {
+    if (view.torchDuration != torchDuration)
+      addChangedPropToTransaction(view, "torchDuration")
+    view.torchDuration = torchDuration
+  }
+
+  @ReactProp(name = "backgroundLevel")
+  fun setBackgroundLevel(view: CameraView, backgroundLevel: Float) {
+    if (view.backgroundLevel != backgroundLevel)
+      addChangedPropToTransaction(view, "backgroundLevel")
+    view.backgroundLevel = backgroundLevel
+  }
+
+  @ReactProp(name = "backgroundDelay")
+  fun setBackgroundDelay(view: CameraView, backgroundDelay: Int) {
+    if (view.backgroundDelay != backgroundDelay)
+      addChangedPropToTransaction(view, "backgroundDelay")
+    view.backgroundDelay = backgroundDelay
+  }
+
+  @ReactProp(name = "backgroundDuration")
+  fun setBackgroundDuration(view: CameraView, backgroundDuration: Int) {
+    if (view.backgroundDuration != backgroundDuration)
+      addChangedPropToTransaction(view, "backgroundDuration")
+    view.backgroundDuration = backgroundDuration
+  }
+
   companion object {
     const val TAG = "CameraView"
 

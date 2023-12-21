@@ -7,7 +7,12 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.os.Build
 import android.util.Log
+import android.view.Display.HdrCapabilities
+import androidx.camera.core.Camera
+import androidx.camera.core.CameraProvider
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraX
+import androidx.camera.core.impl.CameraConfigProvider
 import androidx.camera.extensions.ExtensionMode
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -161,7 +166,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
     coroutineScope.launch {
       withPromise(promise) {
         val cameraProvider = ProcessCameraProvider.getInstance(reactApplicationContext).await()
-//        val extensionsManager = ExtensionsManager.getInstanceAsync(reactApplicationContext, cameraProvider).await()
+        val extensionsManager = ExtensionsManager.getInstanceAsync(reactApplicationContext, cameraProvider).await()
         ProcessCameraProvider.getInstance(reactApplicationContext).await()
 
         val manager = reactApplicationContext.getSystemService(Context.CAMERA_SERVICE) as? CameraManager
@@ -197,9 +202,8 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
             characteristics.get(CameraCharacteristics.INFO_VERSION)
           else null
           val fpsRanges = characteristics.get(CameraCharacteristics.CONTROL_AE_AVAILABLE_TARGET_FPS_RANGES)!!
-//TODO: Replace with the correct extenstion to detect the HRD and night mode
-//          val supportsHdr = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.HDR)
-//          val supportsLowLightBoost = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)
+          val supportsHdr = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.HDR)
+          val supportsLowLightBoost = extensionsManager.isExtensionAvailable(cameraSelector, ExtensionMode.NIGHT)
           // see https://developer.android.com/reference/android/hardware/camera2/CameraDevice#regular-capture
           val supportsParallelVideoProcessing = hardwareLevel != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LEGACY && hardwareLevel != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_LIMITED
 
@@ -216,7 +220,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
           map.putBoolean("supportsParallelVideoProcessing", supportsParallelVideoProcessing)
           map.putBoolean("supportsRawCapture", supportsRawCapture)
           map.putBoolean("supportsDepthCapture", supportsDepthCapture)
-          map.putBoolean("supportsLowLightBoost", false)
+          map.putBoolean("supportsLowLightBoost", supportsLowLightBoost)
           map.putBoolean("supportsFocus", true) // I believe every device here supports focussing
           if (zoomRange != null) {
             map.putDouble("minZoom", zoomRange.lower.toDouble())
@@ -295,7 +299,7 @@ class CameraViewModule(reactContext: ReactApplicationContext) : ReactContextBase
               format.putDouble("fieldOfView", fieldOfView) // TODO: Revisit getAvailableCameraDevices (is fieldOfView accurate?)
               format.putDouble("maxZoom", (zoomRange?.upper ?: maxScalerZoom).toDouble())
               format.putArray("colorSpaces", colorSpaces)
-              format.putBoolean("supportsVideoHDR", false) // TODO: supportsVideoHDR
+              format.putBoolean("supportsVideoHDR", supportsHdr) // TODO: supportsVideoHDR
               format.putBoolean("supportsPhotoHDR", false)
               format.putArray("frameRateRanges", frameRateRanges)
               format.putString("autoFocusSystem", "none") // TODO: Revisit getAvailableCameraDevices (autoFocusSystem) (CameraCharacteristics.CONTROL_AF_AVAILABLE_MODES or CameraCharacteristics.LENS_INFO_FOCUS_DISTANCE_CALIBRATION)
