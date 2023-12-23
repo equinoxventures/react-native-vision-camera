@@ -64,32 +64,32 @@ class FrameProcessorRuntimeManager(context: ReactApplicationContext, frameProces
   @Keep
   fun findCameraViewById(viewId: Int): CameraView {
     Log.d(TAG, "Finding view $viewId...")
-//    val ctx = mContext?.get()
-//    val uiHandler = Handler(Looper.getMainLooper())
-//
-//    val view = if (ctx != null) {
-//      var result: CameraView? = null
-//      uiHandler.post {
-//        result = UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView?
-//      }
-//      result
-//    } else null
-//
-//    Log.d(TAG, if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
-//    return view ?: throw ViewNotFoundError(viewId)
+    val ctx = mContext?.get()
+    val uiHandler = Handler(Looper.getMainLooper())
+
+    val view = if (ctx != null) {
+      var result: CameraView? = null
+      uiHandler.post {
+        result = UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView?
+      }
+      result
+    } else null
+
+    Log.d(TAG, if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
+    return view ?: throw ViewNotFoundError(viewId)
 
 //    val ctx = mContext?.get()
 //    val view = if (ctx != null) UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView? else null
 //    Log.d(TAG,  if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
 //    return view ?: throw ViewNotFoundError(viewId)
 
-    Log.d(TAG, "Finding view $viewId...")
-    val ctx = mContext?.get()
-    val view = if (ctx != null) {
-      UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView?
-    } else null
-    Log.d(TAG, if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
-    return view ?: throw ViewNotFoundError(viewId)
+//    Log.d(TAG, "Finding view $viewId...")
+//    val ctx = mContext?.get()
+//    val view = if (ctx != null) {
+//      UIManagerHelper.getUIManager(ctx, viewId)?.resolveView(viewId) as CameraView?
+//    } else null
+//    Log.d(TAG, if (view != null) "Found view $viewId!" else "Couldn't find view $viewId!")
+//    return view ?: throw ViewNotFoundError(viewId)
   }
 
   // private C++ funcs
