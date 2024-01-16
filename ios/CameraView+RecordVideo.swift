@@ -18,6 +18,10 @@ struct RecordingTimestamps {
     var actualRecordingEndedAt: Double?
     var requestTorchOnAt: Double?
     var requestTorchOffAt: Double?
+    var actualBackgroundTorchOnAt: Double?
+    var actualBackgroundTorchOffAt: Double?
+    var requestBackgroundTorchOnAt: Double?
+    var requestBackgroundTorchOffAt: Double?
 }
 
 import AVFoundation
@@ -112,6 +116,10 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
                 "actualRecordingEndedAt": self.recordingTimestamps.actualRecordingEndedAt,
                 "requestTorchOnAt": self.recordingTimestamps.requestTorchOnAt,
                 "requestTorchOffAt": self.recordingTimestamps.requestTorchOffAt,
+                "requestBackgroundTorchOnAt": self.recordingTimestamps.requestBackgroundTorchOnAt,
+                "requestBackgroundTorchOffAt": self.recordingTimestamps.requestBackgroundTorchOffAt,
+                "actualBackgroundTorchOnAt": self.recordingTimestamps.actualBackgroundTorchOnAt,
+                "actualBackgroundTorchOffAt": self.recordingTimestamps.actualBackgroundTorchOffAt,
               ]
               
             print("recordingTimestamps \(self.recordingTimestamps)")
@@ -181,6 +189,25 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         print("torchDuration:", self.torchDuration)
         var torchDelay = DispatchTimeInterval.milliseconds(Int(self.torchDelay))
         var torchEnd = DispatchTimeInterval.milliseconds(Int(self.torchDelay) + Int(self.torchDuration))
+        
+        var backgroundDelay = DispatchTimeInterval.milliseconds(Int(self.backgroundDelay))
+        var backgroundTorchEnd = DispatchTimeInterval.milliseconds(Int(self.backgroundDelay) + Int(self.backgroundDuration))
+        
+        if let backgroundLevelValue = self.backgroundLevel as? Double {
+            if backgroundLevelValue > 0.0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + backgroundDelay) {
+                    self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+                    self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
+                    self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + backgroundTorchEnd) {
+                    self.recordingTimestamps.requestBackgroundTorchOffAt = NSDate().timeIntervalSince1970
+                    self.setTorchMode("off")
+                    self.recordingTimestamps.actualBackgroundTorchOffAt = NSDate().timeIntervalSince1970
+                }
+            }
+        }
+        
         if Int(self.torchDuration) > 0 {
              DispatchQueue.main.asyncAfter(deadline: .now() + torchDelay) {
                  self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
@@ -191,6 +218,11 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
              DispatchQueue.main.asyncAfter(deadline: .now() + torchEnd) {
                  self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
                  self.setTorchMode("off")
+                 if let backgroundLevelValue = self.backgroundLevel as? Double {
+                     if backgroundLevelValue > 0.0 {
+                         self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
+                     }
+                 }
                  self.recordingTimestamps.actualTorchOffAt = NSDate().timeIntervalSince1970
              }
         }
