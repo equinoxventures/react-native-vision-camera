@@ -211,6 +211,7 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         if Int(self.torchDuration) > 0 {
              DispatchQueue.main.asyncAfter(deadline: .now() + torchDelay) {
                  self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
+                 self.setTorchMode("off")
                  self.setTorchMode("on")
                  self.recordingTimestamps.actualTorchOnAt = NSDate().timeIntervalSince1970
              }
