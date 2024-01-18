@@ -96,6 +96,14 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
             self.setTorchMode(self.torch)
           }
         }
+        
+        if let backgroundLevelValue = self.backgroundLevel as? Double {
+          if backgroundLevelValue > 0.0 && enableBackgroundTorch {
+              self.recordingTimestamps.requestBackgroundTorchOffAt = NSDate().timeIntervalSince1970
+              self.setTorchMode("off")
+              self.recordingTimestamps.actualBackgroundTorchOffAt = NSDate().timeIntervalSince1970
+          }
+        }
 
         self.recordingSession = nil
         self.isRecording = false
@@ -190,21 +198,11 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         var torchDelay = DispatchTimeInterval.milliseconds(Int(self.torchDelay))
         var torchEnd = DispatchTimeInterval.milliseconds(Int(self.torchDelay) + Int(self.torchDuration))
         
-        var backgroundDelay = DispatchTimeInterval.milliseconds(Int(self.backgroundDelay))
-        var backgroundTorchEnd = DispatchTimeInterval.milliseconds(Int(self.backgroundDelay) + Int(self.backgroundDuration))
-        
         if let backgroundLevelValue = self.backgroundLevel as? Double {
-            if backgroundLevelValue > 0.0 {
-                DispatchQueue.main.asyncAfter(deadline: .now() + backgroundDelay) {
-                    self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
-                    self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
-                    self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
-                }
-                DispatchQueue.main.asyncAfter(deadline: .now() + backgroundTorchEnd) {
-                    self.recordingTimestamps.requestBackgroundTorchOffAt = NSDate().timeIntervalSince1970
-                    self.setTorchMode("off")
-                    self.recordingTimestamps.actualBackgroundTorchOffAt = NSDate().timeIntervalSince1970
-                }
+            if backgroundLevelValue > 0.0 && enableBackgroundTorch {
+                self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+                self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
+                self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
             }
         }
         
