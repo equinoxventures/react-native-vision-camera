@@ -189,6 +189,13 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         return
       }
       self.isRecording = true
+        var backgroundDelay = DispatchTimeInterval.milliseconds(Int(self.backgroundDelay))
+        var backgroundTorchEnd = DispatchTimeInterval.milliseconds(Int(self.backgroundDelay) + Int(self.backgroundDuration))
+        
+        if(Int(self.backgroundDelay) > 0) {
+            self.setTorchMode("off")
+        }
+        
         let recordingStartTimestamp = NSDate().timeIntervalSince1970
         ReactLogger.log(level: .info, message: "recordingStartTimestamp:  \(recordingStartTimestamp)")
         self.recordingTimestamps.actualRecordingStartedAt = NSDate().timeIntervalSince1970
@@ -197,6 +204,21 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         print("torchDuration:", self.torchDuration)
         var torchDelay = DispatchTimeInterval.milliseconds(Int(self.torchDelay))
         var torchEnd = DispatchTimeInterval.milliseconds(Int(self.torchDelay) + Int(self.torchDuration))
+        
+        if let backgroundLevelValue = self.backgroundLevel as? Double {
+            if backgroundLevelValue > 0.0 && self.enableBackgroundTorch && Int(self.backgroundDelay) > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + backgroundDelay) {
+                    self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+                    self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
+                    self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + backgroundTorchEnd) {
+                    self.recordingTimestamps.requestBackgroundTorchOffAt = NSDate().timeIntervalSince1970
+                    self.setTorchMode("off")
+                    self.recordingTimestamps.actualBackgroundTorchOffAt = NSDate().timeIntervalSince1970
+                }
+            }
+        }
         
         if Int(self.torchDuration) > 0 {
              DispatchQueue.main.asyncAfter(deadline: .now() + torchDelay) {
@@ -210,7 +232,7 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
                  self.recordingTimestamps.requestTorchOffAt = NSDate().timeIntervalSince1970
                  self.setTorchMode("off")
                  if let backgroundLevelValue = self.backgroundLevel as? Double {
-                     if backgroundLevelValue > 0.0 {
+                     if backgroundLevelValue > 0.0 && self.enableBackgroundTorch && Int(self.backgroundDelay) > 0 {
                          self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
                      }
                  }
