@@ -198,14 +198,6 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         var torchDelay = DispatchTimeInterval.milliseconds(Int(self.torchDelay))
         var torchEnd = DispatchTimeInterval.milliseconds(Int(self.torchDelay) + Int(self.torchDuration))
         
-        if let backgroundLevelValue = self.backgroundLevel as? Double {
-            if backgroundLevelValue > 0.0 && self.enableBackgroundTorch {
-                self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
-                self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
-                self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
-            }
-        }
-        
         if Int(self.torchDuration) > 0 {
              DispatchQueue.main.asyncAfter(deadline: .now() + torchDelay) {
                  self.recordingTimestamps.requestTorchOnAt = NSDate().timeIntervalSince1970
@@ -274,6 +266,13 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
   }
 
   public final func captureOutput(_ captureOutput: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from _: AVCaptureConnection) {
+    if let backgroundLevelValue = self.backgroundLevel as? Double {
+      if backgroundLevelValue > 0.0 && self.enableBackgroundTorch {
+          self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+          self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
+          self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+      }
+    }
     // Video Recording runs in the same queue
     if isRecording {
       guard let recordingSession = recordingSession else {
