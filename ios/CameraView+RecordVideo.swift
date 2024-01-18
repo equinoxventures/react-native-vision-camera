@@ -98,7 +98,7 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         }
         
         if let backgroundLevelValue = self.backgroundLevel as? Double {
-          if backgroundLevelValue > 0.0 && enableBackgroundTorch {
+          if backgroundLevelValue > 0.0 && self.enableBackgroundTorch {
               self.recordingTimestamps.requestBackgroundTorchOffAt = NSDate().timeIntervalSince1970
               self.setTorchMode("off")
               self.recordingTimestamps.actualBackgroundTorchOffAt = NSDate().timeIntervalSince1970
@@ -199,7 +199,7 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
         var torchEnd = DispatchTimeInterval.milliseconds(Int(self.torchDelay) + Int(self.torchDuration))
         
         if let backgroundLevelValue = self.backgroundLevel as? Double {
-            if backgroundLevelValue > 0.0 && enableBackgroundTorch {
+            if backgroundLevelValue > 0.0 && self.enableBackgroundTorch {
                 self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
                 self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
                 self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
