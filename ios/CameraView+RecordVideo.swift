@@ -101,6 +101,7 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
           if backgroundLevelValue > 0.0 && self.enableBackgroundTorch {
               self.recordingTimestamps.requestBackgroundTorchOffAt = NSDate().timeIntervalSince1970
               self.setTorchMode("off")
+              self.isTorchOn = false
               self.recordingTimestamps.actualBackgroundTorchOffAt = NSDate().timeIntervalSince1970
           }
         }
@@ -245,6 +246,7 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
   func stopRecording(promise: Promise) {
     cameraQueue.async {
       self.isRecording = false
+      self.isTorchOn = false
 
       withPromise(promise) {
         guard let recordingSession = self.recordingSession else {
@@ -342,6 +344,14 @@ extension CameraView: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAud
       }
 
       if isReadyForNewEvaluation {
+          if let backgroundLevelValue = self.backgroundLevel as? Double {
+            if backgroundLevelValue > 0.0 && self.enableBackgroundTorch && !self.isTorchOn {
+              self.isTorchOn = true
+              self.recordingTimestamps.requestBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+              self.setBackgroundLight(self.backgroundLevel, torchMode:"on")
+              self.recordingTimestamps.actualBackgroundTorchOnAt = NSDate().timeIntervalSince1970
+            }
+          }
         // last evaluation was more than 1sec ago, evaluate again
         evaluateNewPerformanceSamples()
       }
