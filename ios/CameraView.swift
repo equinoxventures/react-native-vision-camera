@@ -66,6 +66,8 @@ public final class CameraView: UIView {
   @objc var backgroundLevel: NSNumber = 0.0
   @objc var backgroundDelay: NSNumber = 0
   @objc var backgroundDuration: NSNumber = 0
+  @objc var enableBackgroundTorch = false
+  @objc var isTorchOn = false
   @objc var zoom: NSNumber = 1.0 // in "factor"
   @objc var videoStabilizationMode: NSString?
   // events

@@ -49,6 +49,7 @@ RCT_EXPORT_VIEW_PROPERTY(torchDuration, NSNumber);
 RCT_EXPORT_VIEW_PROPERTY(backgroundLevel, NSNumber);
 RCT_EXPORT_VIEW_PROPERTY(backgroundDelay, NSNumber);
 RCT_EXPORT_VIEW_PROPERTY(backgroundDuration, NSNumber);
+RCT_EXPORT_VIEW_PROPERTY(enableBackgroundTorch, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(zoom, NSNumber);
 RCT_EXPORT_VIEW_PROPERTY(enableZoomGesture, BOOL);
 RCT_EXPORT_VIEW_PROPERTY(orientation, NSString);
